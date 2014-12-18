@@ -101,6 +101,23 @@ func (regnet *Regnet) MatchInText(text, patterns string) (match *Match, err erro
 	return nil, nil
 }
 
+func (regnet *Regnet) Exists(text []byte, patterns string) (exists bool, err error) {
+	regnets := regnet.Patterns[blockIdent].Compiled.FindAllString(patterns, -1)
+	if regnets != nil {
+		stripped := regnet.Patterns[blockKey].Compiled.FindString(regnets[0])
+		pattern, present := regnet.GetPattern(stripped)
+		if present {
+			matched := pattern.Compiled.Match(text)
+			return matched, nil
+		} else {
+			return false, errors.New("regnet: pattern " + stripped + " not found.")
+		}
+	} else {
+		return false, errors.New("regnet: invalid pattern definition. Format: %{insert_regent_name_here}")
+	}
+	return false, nil	
+}
+
 func (regnet *Regnet) GetPattern(name string) (pattern Pattern, present bool) {
 	pattern, present = regnet.Patterns[name]
 	return pattern, present
