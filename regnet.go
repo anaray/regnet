@@ -127,7 +127,6 @@ func (regnet *Regnet) AddPatternsFromFile(path string) (err error) {
 	files, err := filepath.Glob(path)
 	if err == nil {
 		for file := range files {
-			fmt.Println(files[file])
 			if patternFile, err := os.Open(files[file]); err == nil {
 				defer patternFile.Close()
 				reader := bufio.NewReader(patternFile)
@@ -150,7 +149,7 @@ func (regnet *Regnet) AddPatternsFromFile(path string) (err error) {
 			}
 		}
 	} else {
-		fmt.Fprintln(os.Stderr, err)
+		return err
 	}
 	return nil
 }
