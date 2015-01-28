@@ -48,7 +48,6 @@ func (regnet *Regnet) AddPattern(name string, pattern string) (err error) {
 	if _, present := regnet.GetPattern(name); present == true {
 		return errors.New("regnet: pattern " + name + " already exists.")
 	}
-
 	r := regnet.Patterns[blockIdent].Compiled
 	slices := r.FindAllString(pattern, -1)
 	for indx := range slices {
@@ -84,8 +83,8 @@ func (match *Match) Step() []string {
 	return match.results
 }
 
-func (regnet *Regnet) MatchInText(text, patterns string) (match *Match, err error) {
-	regnets := regnet.Patterns[blockIdent].Compiled.FindAllString(patterns, -1)
+func (regnet *Regnet) MatchRegnetInText(text, regnetString string) (match *Match, err error) {
+	regnets := regnet.Patterns[blockIdent].Compiled.FindAllString(regnetString, -1)
 	if regnets != nil {
 		stripped := regnet.Patterns[blockKey].Compiled.FindString(regnets[0])
 		pattern, present := regnet.GetPattern(stripped)
@@ -101,8 +100,8 @@ func (regnet *Regnet) MatchInText(text, patterns string) (match *Match, err erro
 	return nil, nil
 }
 
-func (regnet *Regnet) Exists(text []byte, patterns string) (exists bool, err error) {
-	regnets := regnet.Patterns[blockIdent].Compiled.FindAllString(patterns, -1)
+func (regnet *Regnet) Exists(text []byte, regnetString string) (exists bool, err error) {
+	regnets := regnet.Patterns[blockIdent].Compiled.FindAllString(regnetString, -1)
 	if regnets != nil {
 		stripped := regnet.Patterns[blockKey].Compiled.FindString(regnets[0])
 		pattern, present := regnet.GetPattern(stripped)
@@ -116,6 +115,23 @@ func (regnet *Regnet) Exists(text []byte, patterns string) (exists bool, err err
 		return false, errors.New("regnet: invalid pattern definition. Format: %{insert_regent_name_here}")
 	}
 	return false, nil	
+}
+
+//Iterate the entire regnet map and check if any of those patterns exists
+//in the given byte array
+func (regnet *Regnet) MatchRegnetsInText(text []byte) (matched *[]Match, err error) {
+	matches := make([]Match, 0, 100)
+	for key, _ := range regnet.Patterns {
+		//fmt.Println(k,v)
+		pattern, present := regnet.GetPattern(key)
+		if present {
+			matched := pattern.Compiled.FindAllString(string(text[:]), -1)
+			matches = append(matches,Match{key, matched})
+		} else {
+			return nil, errors.New("regnet: pattern " + key + " not found.")
+		}
+	}
+	return &matches, nil
 }
 
 func (regnet *Regnet) GetPattern(name string) (pattern Pattern, present bool) {
