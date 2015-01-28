@@ -57,7 +57,7 @@ func (regnet *Regnet) AddPattern(name string, pattern string) (err error) {
 			return errors.New("regnet: pattern " + key + " not found. Define it before " + name + " regnet.")
 		} else {
 			//replace regent this its derefrenced pattern string
-			pattern = strings.Replace(pattern, "%{" + key + "}", value.Compiled.String(), -1)
+			pattern = strings.Replace(pattern, "%{"+key+"}", value.Compiled.String(), -1)
 		}
 	}
 	//  contains only Regnet, so get the value and compile it
@@ -114,7 +114,7 @@ func (regnet *Regnet) Exists(text []byte, regnetString string) (exists bool, err
 	} else {
 		return false, errors.New("regnet: invalid pattern definition. Format: %{insert_regent_name_here}")
 	}
-	return false, nil	
+	return false, nil
 }
 
 //Iterate the entire regnet map and check if any of those patterns exists
@@ -123,12 +123,16 @@ func (regnet *Regnet) MatchRegnetsInText(text []byte) (matched *[]Match, err err
 	matches := make([]Match, 0, 100)
 	for key, _ := range regnet.Patterns {
 		//fmt.Println(k,v)
-		pattern, present := regnet.GetPattern(key)
-		if present {
-			matched := pattern.Compiled.FindAllString(string(text[:]), -1)
-			matches = append(matches,Match{key, matched})
-		} else {
-			return nil, errors.New("regnet: pattern " + key + " not found.")
+		if key != blockIdent && key != blockKey {
+			pattern, present := regnet.GetPattern(key)
+			if present {
+				match := pattern.Compiled.FindAllString(string(text[:]), -1)
+				if match != nil && len(match) > 0 {
+					matches = append(matches, Match{key, match})
+				}
+			} else {
+				return nil, errors.New("regnet: pattern " + key + " not found.")
+			}
 		}
 	}
 	return &matches, nil
