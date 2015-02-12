@@ -72,15 +72,16 @@ func (regnet *Regnet) AddPattern(name string, pattern string) (err error) {
 
 type Match struct {
 	Ident   string
-	results []string
+	Results []byte
+	RemainingData []byte
 }
 
 func (match *Match) String() string {
-	return fmt.Sprintf("%s : %s", match.Ident, match.results)
+	return fmt.Sprintf("%s : %s", match.Ident, match.Results)
 }
 
-func (match *Match) Step() []string {
-	return match.results
+func (match *Match) Step() []byte {
+	return match.Results
 }
 
 func (regnet *Regnet) MatchRegnetInText(text, regnetString string) (match *Match, err error) {
@@ -90,7 +91,30 @@ func (regnet *Regnet) MatchRegnetInText(text, regnetString string) (match *Match
 		pattern, present := regnet.GetPattern(stripped)
 		if present {
 			matched := pattern.Compiled.FindAllString(text, -1)
-			return &Match{stripped, matched}, nil
+			return &Match{Ident: stripped, Results: []byte(matched[0])}, nil
+		} else {
+			return nil, errors.New("regnet: pattern " + stripped + " not found.")
+		}
+	} else {
+		return nil, errors.New("regnet: invalid pattern definition. Format: %{insert_regent_name_here}")
+	}
+	return nil, nil
+}
+
+func (regnet *Regnet) MatchRegnetByIndexInText(text, regnetString string) (match *Match, err error) {
+	regnets := regnet.Patterns[blockIdent].Compiled.FindAllString(regnetString, -1)
+	if regnets != nil {
+		stripped := regnet.Patterns[blockKey].Compiled.FindString(regnets[0])
+		pattern, present := regnet.GetPattern(stripped)
+		if present {
+			loc := pattern.Compiled.FindIndex([]byte(text))
+			if len(loc) == 2 {
+				start := loc[0]
+				end := loc[1]
+				data := text[start : end]
+				remaining := text[end : len(text)]
+				return &Match{Ident: stripped, Results: []byte(data), RemainingData: []byte(remaining)}, nil
+			}
 		} else {
 			return nil, errors.New("regnet: pattern " + stripped + " not found.")
 		}
@@ -128,7 +152,7 @@ func (regnet *Regnet) MatchRegnetsInText(text []byte) (matched *[]Match, err err
 			if present {
 				match := pattern.Compiled.FindAllString(string(text[:]), -1)
 				if match != nil && len(match) > 0 {
-					matches = append(matches, Match{key, match})
+					matches = append(matches, Match{Ident: key, Results: []byte(match[0])})
 				}
 			} else {
 				return nil, errors.New("regnet: pattern " + key + " not found.")
