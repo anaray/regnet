@@ -91,7 +91,7 @@ func (regnet *Regnet) MatchRegnetInText(text, regnetString string) (match *Match
 		pattern, present := regnet.GetPattern(stripped)
 		if present {
 			matched := pattern.Compiled.FindAllString(text, -1)
-			if if match != nil && len(matched) > 0 {
+			if match != nil && len(matched) > 0 {
 				return &Match{Ident: stripped, Results: []byte(matched[0])}, nil
 			}
 		} else {
