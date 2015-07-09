@@ -31,7 +31,7 @@ Usage:
   r.AddPattern("ACTION_DATE", `%{DAY} May %{YEAR}`)
   
   //regnets can be defined in a file and can be loaded as below
-  //err := r.AddPatternsFromFile("/regex/text/patterns/extra")
+  //err := r.AddPatternsFromFile("/patterns/regnets/my_patterns.regnet")
 
   match, _ := r.MatchInText("Tue May 15 11:21:42 [conn1047685] moveChunk deleted: 7157", "%{ACTION_DATE}")
 
