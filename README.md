@@ -32,12 +32,14 @@ Usage:
   
   //regnets can be defined in a file and can be loaded as below
   //err := r.AddPatternsFromFile("/patterns/regnets/my_patterns.regnet")
-
-  match, _ := r.MatchInText("Tue May 15 11:21:42 [conn1047685] moveChunk deleted: 7157", "%{ACTION_DATE}")
-
-  for _, result := range match.Step() {
-    fmt.Println(match.Ident, ":" ,result)
+  if err == nil {
+  	match, _ := r.MatchInText("Tue May 15 11:21:42 [conn1047685] moveChunk deleted: 7157", "%{ACTION_DATE}")
+  	for _, result := range match.Step() {
+	    fmt.Println(match.Ident, ":" ,result)
+  	}
   }
+
+  
 	
 ```
 Inspired by Jordan Sissel's work https://github.com/jordansissel/grok
